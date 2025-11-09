@@ -1,23 +1,59 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import './App.css'
 import DataFetcher from './components/DataFetcher'
 import D3Plot from './components/D3Test'
 import ClusterVisualization from './components/ClusterVisualization'
 import ClusterHistogram from './components/ClusterHistogram'
 import ClusterPosition from './components/ClusterPosition'
-import { Tabs } from "@chakra-ui/react"
+import { Tabs, Flex, Box } from "@chakra-ui/react"
 
 function App() {
   const [geneData, setGeneData] = useState(null)
   const [selectedCluster, setSelectedCluster] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const [xImmediate, setXImmediate] = useState('popularity')
+  const [yImmediate, setYImmediate] = useState('danceability')
+
   const [x, setX] = useState('popularity')
   const [y, setY] = useState('danceability')
 
-  console.log('🏠 App.jsx RENDER with x:', x, 'y:', y);
+  const xTimeoutRef = useRef(null)
+  const yTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    if (xTimeoutRef.current) {
+      clearTimeout(xTimeoutRef.current);
+    }
+
+    xTimeoutRef.current = setTimeout(() => {
+      setX(xImmediate);
+    }, 300);
+
+    return () => {
+      if (xTimeoutRef.current) {
+        clearTimeout(xTimeoutRef.current);
+      }
+    };
+  }, [xImmediate]);
+
+  useEffect(() => {
+    if (yTimeoutRef.current) {
+      clearTimeout(yTimeoutRef.current);
+    }
+
+    yTimeoutRef.current = setTimeout(() => {
+      setY(yImmediate);
+    }, 300);
+
+    return () => {
+      if (yTimeoutRef.current) {
+        clearTimeout(yTimeoutRef.current);
+      }
+    };
+  }, [yImmediate]);
 
   const handleClusterClick = useCallback((cluster) => {
-    console.log('📍 App.jsx handleClusterClick called');
     setSelectedCluster(cluster)
     setIsModalOpen(true)
   }, []);
@@ -58,21 +94,32 @@ function App() {
               <D3Plot data={geneData}/>
             </Tabs.Content>
             <Tabs.Content value="clusters">
-              <ClusterPosition
-                x={x}
-                y={y}
-                onXChange={setX}
-                onYChange={setY}
-              />
-
-              <ClusterVisualization
-                key="stable-cluster-visualization"
-                onClusterClick={handleClusterClick}
-                xVariable={x}
-                yVariable={y}
-              />
-
-              {/* Custom Modal for cluster histogram */}
+              <Flex direction="column" gap={4} align="stretch" maxW="100%" overflow="hidden">
+                <Box flexShrink={0}>
+                  <ClusterPosition
+                    x={xImmediate}
+                    y={yImmediate}
+                    onXChange={setXImmediate}
+                    onYChange={setYImmediate}
+                  />
+                </Box>
+                <Box
+                  flexShrink={0}
+                  minH="580px"
+                  w="100%"
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="flex-start"
+                  position="relative"
+                >
+                  <ClusterVisualization
+                    key="stable-cluster-visualization"
+                    onClusterClick={handleClusterClick}
+                    xVariable={x}
+                    yVariable={y}
+                  />
+                </Box>
+              </Flex>
               {isModalOpen && (
                 <div
                   style={{

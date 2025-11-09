@@ -1,51 +1,96 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 const D3Circles = ({ clusters, onClusterClick }) => {
   const svgRef = useRef(null);
 
   useEffect(() => {
-    if (!svgRef.current || !clusters || clusters.length === 0) return;
+    if (!svgRef.current || !clusters || clusters.length === 0) {
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll('g.cluster-group').remove();
+      }
+      return;
+    }
 
     const svg = d3.select(svgRef.current);
+    const groups = svg.selectAll('g.cluster-group')
+      .data(clusters, d => d.id);
 
-    // Clear everything and start fresh - no fancy data binding
-    svg.selectAll("*").remove();
+    // EXIT: Remove old clusters with smooth transition
+    groups.exit()
+      .transition('exit')
+      .duration(250)
+      .ease(d3.easeQuadInOut)
+      .style('opacity', 0)
+      .attr('transform', d => `translate(${d.x}, ${d.y}) scale(0.1)`)
+      .remove();
 
-    // Add circles - simple approach
-    clusters.forEach(cluster => {
-      const g = svg.append('g');
+    // ENTER: Create new cluster groups
+    const enterGroups = groups.enter()
+      .append('g')
+      .attr('class', 'cluster-group')
+      .attr('transform', d => `translate(${d.x}, ${d.y}) scale(0.1)`)
+      .style('opacity', 0);
 
-      g.append('circle')
-        .attr('cx', cluster.x)
-        .attr('cy', cluster.y)
-        .attr('r', cluster.r)
-        .attr('fill', cluster.color)
-        .attr('stroke', 'white')
-        .attr('stroke-width', 2)
-        .attr('opacity', 0.7)
-        .style('cursor', 'pointer')
-        .on('click', () => {
-          if (onClusterClick) {
-            onClusterClick(cluster);
-          }
-        });
+    // Add circles to new groups
+    enterGroups.append('circle')
+      .attr('r', 0) // Start at radius 0
+      .attr('fill', d => d.color)
+      .attr('stroke', 'white')
+      .attr('stroke-width', 2)
+      .attr('opacity', 0.7)
+      .style('cursor', 'pointer')
+      .on('click', (event, d) => {
+        if (onClusterClick) {
+          onClusterClick(d);
+        }
+      });
 
-      g.append('text')
-        .attr('x', cluster.x)
-        .attr('y', cluster.y)
-        .attr('text-anchor', 'middle')
-        .attr('dy', '0.35em')
-        .attr('font-size', '12')
-        .attr('font-weight', 'bold')
-        .attr('fill', 'white')
-        .attr('pointer-events', 'none')
-        .text(cluster.id);
-    });
+    enterGroups.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '0.35em')
+      .attr('font-size', '0')
+      .attr('font-weight', 'bold')
+      .attr('fill', 'white')
+      .attr('pointer-events', 'none')
+      .text(d => d.id);
+
+    const allGroups = enterGroups.merge(groups);
+
+    allGroups
+      .transition('update')
+      .duration(400)
+      .ease(d3.easeBackOut.overshoot(0.3))
+      .attr('transform', d => `translate(${d.x}, ${d.y}) scale(1)`)
+      .style('opacity', 1);
+
+    allGroups.select('circle')
+      .transition('update')
+      .duration(400)
+      .ease(d3.easeQuadOut)
+      .attr('r', d => d.r)
+      .attr('fill', d => d.color);
+
+    allGroups.select('text')
+      .transition('update')
+      .duration(400)
+      .ease(d3.easeQuadOut)
+      .delay(100)
+      .attr('font-size', '12');
+  
+    allGroups.select('circle')
+      .on('click', (event, d) => {
+        if (onClusterClick) {
+          onClusterClick(d);
+        }
+      });
 
   }, [clusters, onClusterClick]);
 
   return <g ref={svgRef}></g>;
 };
 
-export default D3Circles;
+export default React.memo(D3Circles, (prevProps, nextProps) => {
+  return prevProps.clusters === nextProps.clusters &&
+         prevProps.onClusterClick === nextProps.onClusterClick;
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import DUCKDB_API from './Constants';
 import axios from 'axios';
 import * as d3 from 'd3';
@@ -10,7 +10,7 @@ const ClusterVisualization = ({ onClusterClick, xVariable = 'popularity', yVaria
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Simplified component - no complex logging
+  // console.log('🎯 ClusterVisualization RENDER:', { xVariable, yVariable, clustersLength: clusters?.length });
 
   // Fetch static cluster data for sizes and IDs
   useEffect(() => {
@@ -33,6 +33,13 @@ const ClusterVisualization = ({ onClusterClick, xVariable = 'popularity', yVaria
   // Fetch dynamic positions based on selected variables
   useEffect(() => {
     const fetchClusterAverages = async () => {
+      // Skip fetch if missing required data
+      if (!xVariable || !yVariable) {
+        return;
+      }
+
+      console.log('🚀 Fetching cluster averages for:', { xVariable, yVariable, hasStaticClusters: !!staticClusters });
+
       try {
         setIsLoading(true);
         const response = await axios.get(`${DUCKDB_API}/cluster-averages?x_var=${xVariable}&y_var=${yVariable}`);
@@ -50,25 +57,24 @@ const ClusterVisualization = ({ onClusterClick, xVariable = 'popularity', yVaria
             id: parseInt(clusterId),
             x: data.x,
             y: data.y,
-            size: staticInfo?.size || 50, // Use static size or default
+            size: staticInfo?.size || 50, // Use static size or default (works without static data)
             count: data.count
           });
         }
 
         setClusters(clusterData);
         setError(null);
+        console.log('✅ Successfully fetched', clusterData.length, 'clusters');
       } catch (err) {
         setError(`Failed to fetch cluster averages: ${err.message}`);
-        console.error('Error fetching cluster averages:', err);
+        console.error('❌ Error fetching cluster averages:', err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (staticClusters && xVariable && yVariable) {
-      fetchClusterAverages();
-    }
-  }, [xVariable, yVariable, staticClusters]);
+    fetchClusterAverages();
+  }, [xVariable, yVariable, staticClusters]); // Include staticClusters for size updates but it won't block initial fetch
 
   const handleClusterClick = useCallback((cluster) => {
     if (onClusterClick) {
@@ -76,6 +82,7 @@ const ClusterVisualization = ({ onClusterClick, xVariable = 'popularity', yVaria
     }
   }, [onClusterClick]);
 
+  // Stable dimensions - defined once to prevent layout shifts
   const width = 600;
   const height = 500;
   const margin = { top: 40, right: 40, bottom: 60, left: 60 };
@@ -84,10 +91,10 @@ const ClusterVisualization = ({ onClusterClick, xVariable = 'popularity', yVaria
 
   const colorScale = useMemo(() => d3.scaleOrdinal(d3.schemeDark2), []); // Stable color scale
 
-  const { clusterRender, xScale, yScale } = useMemo(() => {
+  // Separate scales calculation to reduce re-computation
+  const { xScale, yScale } = useMemo(() => {
     if (!clusters || clusters.length === 0) {
       return {
-        clusterRender: [],
         xScale: d3.scaleLinear().range([0, innerWidth]),
         yScale: d3.scaleLinear().range([innerHeight, 0])
       };
@@ -107,55 +114,132 @@ const ClusterVisualization = ({ onClusterClick, xVariable = 'popularity', yVaria
       .domain([yExtent[0] - yPadding, yExtent[1] + yPadding])
       .range([innerHeight, 0]); // Invert Y-axis for SVG
 
+    return { xScale, yScale };
+  }, [clusters, innerWidth, innerHeight]);
+
+  // Separate cluster rendering calculation with stable reference when possible
+  const clusterRender = useMemo(() => {
+    if (!clusters || clusters.length === 0 || !xScale || !yScale) {
+      return [];
+    }
+
     const radii = d3.extent(clusters, d => d.size);
     const rScale = d3.scaleSqrt()
       .domain(radii)
       .range([10, 30]); // Reasonable radius range
 
-    const clusterRender = clusters.map((cluster, i) => ({
-      ...cluster,
+    return clusters.map((cluster, i) => ({
+      id: cluster.id,
       x: xScale(cluster.x),
       y: yScale(cluster.y),
       r: rScale(cluster.size),
-      color: colorScale(cluster.id)
+      color: colorScale(cluster.id),
+      // Keep original values for debugging
+      originalX: cluster.x,
+      originalY: cluster.y,
+      size: cluster.size,
+      count: cluster.count
     }));
-
-    return { clusterRender, xScale, yScale };
-  }, [clusters, innerWidth, innerHeight, colorScale]);
+  }, [clusters, xScale, yScale, colorScale]);
 
   if (isLoading) {
     return (
-      <div className="cluster-visualization">
-        <h2>Music Clusters</h2>
-        <p>Loading cluster data...</p>
+      <div className="cluster-visualization" style={{ width: width, minHeight: height + 100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
+          <h2 style={{ margin: 0 }}>Spotify Music Clusters</h2>
+          <div style={{
+            width: '20px',
+            height: '20px',
+            border: '2px solid #f3f3f3',
+            borderTop: '2px solid #666',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+        </div>
+        <p style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
+          Loading cluster data...
+        </p>
+        <div style={{
+          width: width,
+          height: height,
+          border: '1px solid #ddd',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#fafafa'
+        }}>
+          <p style={{ color: '#999' }}>Loading visualization...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="cluster-visualization">
-        <h2>Music Clusters</h2>
-        <p style={{ color: 'red' }}>{error}</p>
-        <p>Could not fetch data! Check FastAPI server logs.</p>
+      <div className="cluster-visualization" style={{ width: width, minHeight: height + 100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
+          <h2 style={{ margin: 0, color: '#d32f2f' }}>Spotify Music Clusters</h2>
+        </div>
+        <p style={{ fontSize: '14px', color: '#d32f2f', marginBottom: '15px' }}>
+          {error}
+        </p>
+        <div style={{
+          width: width,
+          height: height,
+          border: '1px solid #d32f2f',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#ffeaea'
+        }}>
+          <p style={{ color: '#d32f2f' }}>Could not fetch data! Check FastAPI server logs.</p>
+        </div>
       </div>
     );
   }
 
   if (!clusters || clusters.length === 0) {
     return (
-      <div className="cluster-visualization">
-        <h2>Music Clusters</h2>
-        <p>No cluster data found. Are you pointing to the right DB?</p>
+      <div className="cluster-visualization" style={{ width: width, minHeight: height + 100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
+          <h2 style={{ margin: 0 }}>Spotify Music Clusters</h2>
+        </div>
+        <p style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
+          No cluster data found. Are you pointing to the right DB?
+        </p>
+        <div style={{
+          width: width,
+          height: height,
+          border: '1px solid #ddd',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#fafafa'
+        }}>
+          <p style={{ color: '#999' }}>No data to display</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="cluster-visualization">
-      <h2>Spotify Music Clusters</h2>
+    <div className="cluster-visualization" style={{ width: width, minHeight: height + 100 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
+        <h2 style={{ margin: 0 }}>Spotify Music Clusters</h2>
+        {isLoading && (
+          <div style={{
+            width: '20px',
+            height: '20px',
+            border: '2px solid #f3f3f3',
+            borderTop: '2px solid #666',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+        )}
+      </div>
       <p style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
         Showing clusters positioned by average <strong>{xVariable}</strong> (X) vs <strong>{yVariable}</strong> (Y)
+        {isLoading && <span style={{ color: '#999', marginLeft: '10px' }}>(Loading...)</span>}
       </p>
       <svg width={width} height={height} style={{ border: '1px solid #ddd' }}>
         <g transform={`translate(${margin.left}, ${margin.top})`}>
@@ -220,4 +304,9 @@ const ClusterVisualization = ({ onClusterClick, xVariable = 'popularity', yVaria
   );
 };
 
-export default ClusterVisualization;
+// Memoize to prevent unnecessary re-renders when props haven't changed
+export default React.memo(ClusterVisualization, (prevProps, nextProps) => {
+  return prevProps.xVariable === nextProps.xVariable &&
+         prevProps.yVariable === nextProps.yVariable &&
+         prevProps.onClusterClick === nextProps.onClusterClick;
+});
