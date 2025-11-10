@@ -274,34 +274,3 @@ async def get_categorical_data() -> dict:
         }
         for row in res
     }
-    
-        
-
-@app.get("/api/data")
-async def get_data():
-    # Generate comprehensive fake gene expression data for d3 heatmap
-    genes = [
-        "BRCA1", "TP53", "EGFR", "KRAS", "PIK3CA", "PTEN", "APC", "BRAF",
-        "CDKN2A", "RB1", "MYC", "ERBB2", "FGFR1", "IDH1", "MDM2", "CCND1",
-        "CDK4", "VEGFA", "TERT", "NF1"
-    ]
-
-    data = []
-    for gene in genes:
-        tpm = round(abs(__import__('random').gauss(4.5, 2.5)), 2)  # Normal distribution, mean=4.5, std=2.5
-        tpm = max(0.1, min(tpm, 15.0))  # Clamp between 0.1 and 15.0
-        data.append({
-            "gene": gene,
-            "tpm": tpm,
-            "metadata": "internal"
-        })
-    for gene in genes:
-        tpm = round(abs(__import__('random').gauss(8.2, 4.0)), 2)  # Higher mean=8.2, more variation std=4.0
-        tpm = max(0.5, min(tpm, 25.0))  # Clamp between 0.5 and 25.0
-        data.append({
-            "gene": gene,
-            "tpm": tpm,
-            "metadata": "public"
-        })
-
-    return {"results": data}
