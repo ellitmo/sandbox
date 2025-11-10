@@ -90,7 +90,7 @@ const ClusterScatterplot = memo(
         <h3>
           Cluster Comparison: {clusterId1} vs {clusterId2}
         </h3>
-        {isLoading && <Spinner/>}
+        {isLoading && <Spinner />}
         <svg width={width} height={height}>
           <g transform={`translate(${margin.left}, ${margin.top})`}>
             <rect
@@ -109,7 +109,7 @@ const ClusterScatterplot = memo(
                 opacity={0.7}
               />
             ))}
-            <g transform={`translate(0, ${innerHeight+1})`}>
+            <g transform={`translate(0, ${innerHeight + 1})`}>
               <line x1={0} x2={innerWidth} stroke="#333" strokeWidth={1} />
               {xScale.ticks(5).map((tick) => (
                 <g key={tick} transform={`translate(${xScale(tick)}, 0)`}>
@@ -121,7 +121,7 @@ const ClusterScatterplot = memo(
               ))}
             </g>
             <g>
-              <line y1={0} y2={innerHeight+1} stroke="#333" strokeWidth={1} />
+              <line y1={0} y2={innerHeight + 1} stroke="#333" strokeWidth={1} />
               {yScale.ticks(5).map((tick) => (
                 <g key={tick} transform={`translate(0, ${yScale(tick)})`}>
                   <line x1={-6} x2={0} stroke="#333" />

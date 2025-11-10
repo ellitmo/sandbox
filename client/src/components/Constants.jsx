@@ -6,7 +6,7 @@ export const CHART_CONFIG = {
   margin: { top: 40, right: 40, bottom: 60, left: 70 },
 };
 
-export const GREEN = "#1ED760"
+export const GREEN = "#1ED760";
 export const getChartDimensions = (config = CHART_CONFIG) => ({
   ...config,
   innerWidth: config.width - config.margin.left - config.margin.right,

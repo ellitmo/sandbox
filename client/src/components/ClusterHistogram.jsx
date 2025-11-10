@@ -82,7 +82,14 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
     );
   }
   return (
-    <div style={{ position: "relative", minHeight: height, minWidth: width, padding:"10px" }}>
+    <div
+      style={{
+        position: "relative",
+        minHeight: height,
+        minWidth: width,
+        padding: "10px",
+      }}
+    >
       {(isLoadingOptions || isLoadingStats) && (
         <div
           style={{
@@ -101,7 +108,14 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
           Loading histogram...
         </div>
       )}
-      <h3 style={{ marginBottom: "15px", fontSize: "18px", color: "#333", textAlign:"left" }}>
+      <h3
+        style={{
+          marginBottom: "15px",
+          fontSize: "18px",
+          color: "#333",
+          textAlign: "left",
+        }}
+      >
         Select feature:
       </h3>
       <div
@@ -156,15 +170,10 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
             {xScaleLinear.ticks(8).map((tick) => (
               <g key={tick} transform={`translate(${xScaleLinear(tick)}, 0)`}>
                 <line y1={0} y2={6} stroke="#333" />
-                <text
-                  y={20}
-                  textAnchor="middle"
-                  fontSize="12"
-                  fill="#333"
-                >
+                <text y={20} textAnchor="middle" fontSize="12" fill="#333">
                   {tick.toFixed(1)}
                 </text>
-                </g>
+              </g>
             ))}
             <text
               textAnchor="middle"

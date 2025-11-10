@@ -101,7 +101,9 @@ const SimilarSong = () => {
                       setAutocomplete([]);
                     }}
                   >
-                    <Box fontWeight="medium" color="gray.600">{item.track_name}</Box>
+                    <Box fontWeight="medium" color="gray.600">
+                      {item.track_name}
+                    </Box>
                     <Box fontSize="sm" color="gray.600">
                       {item.artist_name}
                     </Box>

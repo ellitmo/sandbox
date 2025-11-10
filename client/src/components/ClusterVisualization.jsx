@@ -106,17 +106,20 @@ const ClusterVisualization = memo(
     const { width, height, margin, innerWidth, innerHeight } =
       getChartDimensions();
 
-    const handleHover = useCallback((event, cluster) => {
-      const svg = event.currentTarget.closest('svg');
-      const svgRect = svg.getBoundingClientRect();
-      setCurrentHover({
-        cluster,
-        position: { 
-          x: svgRect.left + cluster.x + margin.left,
-          y: svgRect.top + cluster.y + margin.top
-        },
-      });
-    }, [margin.left, margin.top]);
+    const handleHover = useCallback(
+      (event, cluster) => {
+        const svg = event.currentTarget.closest("svg");
+        const svgRect = svg.getBoundingClientRect();
+        setCurrentHover({
+          cluster,
+          position: {
+            x: svgRect.left + cluster.x + margin.left,
+            y: svgRect.top + cluster.y + margin.top,
+          },
+        });
+      },
+      [margin.left, margin.top],
+    );
 
     const handleHoverLeave = useCallback(() => {
       setCurrentHover(null);
@@ -307,7 +310,7 @@ const ClusterVisualization = memo(
     return (
       <div
         className="cluster-visualization"
-        style={{ width: width, minHeight: height + 100, position: 'relative'}}
+        style={{ width: width, minHeight: height + 100, position: "relative" }}
       >
         <ClusterHover
           cluster={currentHover?.cluster}
@@ -338,9 +341,9 @@ const ClusterVisualization = memo(
         <p style={{ fontSize: "14px", color: "#666", marginBottom: "15px" }}>
           Showing clusters positioned by average <strong>{xVariable}</strong>{" "}
           (X) vs <strong>{yVariable}</strong> (Y)
-          <br/>
+          <br />
           Click on a cluster to see histogram distributions of its features
-          <br/>
+          <br />
           Shift + click on 2 clusters to compare currently selected features
           {isLoading && (
             <span style={{ color: "#999", marginLeft: "10px" }}>

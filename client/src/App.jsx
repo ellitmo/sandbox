@@ -52,11 +52,17 @@ function App() {
 
   return (
     <>
-      <h1 style={{ padding:2, fontSize: 32, color:GREEN}}>Spotify Track Explorer</h1>
-      <Tabs.Root defaultValue="clusters" padding={'5px'}>
+      <h1 style={{ padding: 2, fontSize: 32, color: GREEN }}>
+        Spotify Track Explorer
+      </h1>
+      <Tabs.Root defaultValue="clusters" padding={"5px"}>
         <Tabs.List>
-          <Tabs.Trigger value="clusters" color={GREEN}>Music Clusters</Tabs.Trigger>
-          <Tabs.Trigger value="recommendations" color={GREEN}>Recommendations</Tabs.Trigger>
+          <Tabs.Trigger value="clusters" color={GREEN}>
+            Music Clusters
+          </Tabs.Trigger>
+          <Tabs.Trigger value="recommendations" color={GREEN}>
+            Recommendations
+          </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="clusters">
           <Flex
