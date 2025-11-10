@@ -13,16 +13,16 @@ run `make server` and `make client` separately.
 ## Stack Overview
 The backend server is run using FastAPI - I like the typing,
 automatic doc generation + async support. The server is mostly fetching data 
-from duckdb - working with tabular data and using lookup tables like the ones
-I stood up to map tracks to clusters are both a good fit for a relational database.
+from duckdb. Working with tabular data and using lookup tables like the ones
+I stood up to map tracks to clusters are both a good use case for a relational database.
 Doing this preprocessing (i.e, cluster generation & storage of index information
 for the approximate nearest neighbors results) saves us a lot of computation time
 when running the app, and is an easy way to make customizeable queries (such
 as the route that generates autocomplete suggestions)
 
-The frontend client is written as a React app, using most heavily chakra for 
+The frontend client is written as a React app, using mostly chakra for 
 UI elements and d3 for calculations and plotting. Where I could, I created
-atomic components to avoid repeated boilerplate and allow usage of react's memoization for performance. 
+atomic components to avoid repeated boilerplate and made use of react's memoization for performance. 
 The frontend code was formatted with prettier (`npx prettier`) and I created the basic skeleton for the frontend using vite (`npm create vite@latest`). 
 
 ## Data Processing & Algorithm Selection
@@ -35,7 +35,8 @@ audio features aren't independent—for example, 'pop' tracks tend to have highe
 ## Visualization
 The tool provides an interactive dashboard with three main views:
 1. **Cluster explorer**: Scatter plots showing song distributions across audio features from the original kaggle dataset (energy, valence, danceability, etc.). Hovering over each cluster displays a summary of its categorical information - the most common genre, mode, key, and time signature - as well 
-as the number of tracks in each cluster.
+as the number of tracks in each cluster. Clicking into a single cluster will bring up a histogram view, where users can chose which numeric feature
+to see as a distribution.
 2. **Cluster comparison**: Shift-clicking two clusters will bring up a scatterplot of the selected numeric features, so users can see a side-by-side
 comparison of two clusters. I downsampled the number of tracks here for svg performance, only returning the most popular songs in each cluster.
 3. **Similar tracks finder**: Search for any song in the dataset and get 10 acoustically similar recommendations. This includes an autocomplete suggestion to find real songs in the database
