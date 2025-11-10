@@ -1,9 +1,6 @@
 const CloseButton = ({ onClick }) => {
   return (
-    <button
-      onClick={onClick}
-      className="modal-close-button"
-    >
+    <button onClick={onClick} className="modal-close-button">
       ✕
     </button>
   );

@@ -1,14 +1,14 @@
 import duckdb
-from annoy import AnnoyIndex
+from server.annoy_alternatives import SklearnAnnoyReplacement as AnnoyIndex
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from cluster_grid import generate_cluster_positions_df
 import numpy as np
 import pandas as pd
 
-DB_NAME = "testdb.duckdb"
+DB_NAME = "server/db.duckdb"
 CSV_NAME = "SpotifyFeatures.csv"
-INDEX_PATH = "tracks.ann"
+INDEX_PATH = "server/tracks.pkl"
 
 def create_db() -> pd.DataFrame:
     print("Building duckdb database...")
@@ -19,18 +19,18 @@ def create_db() -> pd.DataFrame:
         con.execute("CREATE TABLE IF NOT EXISTS cluster (id INTEGER PRIMARY KEY, x FLOAT, y FLOAT, size FLOAT)")
         con.execute(
             """
-            CREATE TABLE IF NOT EXISTS track_to_cluster 
-            (track_id VARCHAR, cluster_id INTEGER, 
+            CREATE TABLE IF NOT EXISTS track_to_cluster
+            (track_id VARCHAR, cluster_id INTEGER,
             FOREIGN KEY (track_id) REFERENCES track (track_id),
             FOREIGN KEY (cluster_id) REFERENCES cluster (id))
             """
             )
         con.execute("""
-            CREATE TABLE IF NOT EXISTS track_annoy_index 
+            CREATE TABLE IF NOT EXISTS track_annoy_index
             (annoy_index INTEGER PRIMARY KEY, track_id VARCHAR)
         """)
     return spotify_df
-        
+
 def preprocess() -> pd.DataFrame:
     spotify_df = pd.read_csv(CSV_NAME)
     spotify_df = spotify_df.drop_duplicates(subset=["track_id"], keep="first")
@@ -63,22 +63,23 @@ def kmeans(spotify_df: pd.DataFrame, n_clusters: int = 12) -> tuple[pd.DataFrame
     trackdf = df[['cluster_labels']].reset_index().rename(columns={'cluster_labels':'cluster_id'})
     with duckdb.connect(database=DB_NAME) as con:
         con.execute("INSERT INTO track_to_cluster BY NAME SELECT * FROM trackdf")
-    
+
     return df, df_znorm
 
 def annoy(features_znorm: np.ndarray, track_ids:list[str], n_trees: int = 10):
     n_features = features_znorm.shape[1]
-    print(n_features)
-    index = AnnoyIndex(n_features, 'euclidean')
+
+    index = AnnoyIndex(n_features, 'angular')  # This will use cosine distance internally
+    print(len(track_ids))
+
     for i, track_id in enumerate(track_ids):
-        index.add_item(i, features_znorm[i])
-    
-    print(f"Building Annoy index with {n_trees} trees...")
+        vector = features_znorm[i]
+        if len(vector.shape) > 1:
+            vector = vector.flatten()
+        index.add_item(i, vector)
+
     index.build(n_trees)
-
     index.save(INDEX_PATH)
-
-    mapping_df = pd.DataFrame({'index': range(len(track_ids)), 'track_id': track_ids})
     mapping_df = pd.DataFrame({'annoy_index': range(len(track_ids)), 'track_id': track_ids})
     with duckdb.connect(database=DB_NAME) as con:
         con.execute("INSERT INTO track_annoy_index BY NAME SELECT * FROM mapping_df")
@@ -89,7 +90,6 @@ def main():
     feature_df, features_znorm = kmeans(df, n_clusters=12)
     track_ids = feature_df.index.tolist()
     annoy(features_znorm=features_znorm, track_ids=track_ids)
-    print(f"Saved artifacts to duckdb! Index saved at {INDEX_PATH}")
 
 if __name__ == '__main__':
     main()
