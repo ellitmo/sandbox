@@ -2,13 +2,9 @@ import { useEffect, useState } from "react";
 import { Box, Flex, Input, Button } from "@chakra-ui/react";
 import axios from "axios";
 import { DUCKDB_API } from "./Constants";
-import ClusterScatterplot from "./ClusterScatterplot";
 
 
-const SimilarSong = ({
-  xVariable = "popularity",
-  yVariable = "danceability",
-}) => {
+const SimilarSong = () => {
 
   const [trackName, setTrackName] = useState("");
   const [suggestions, setSuggestions] = useState(null);

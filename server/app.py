@@ -250,6 +250,30 @@ async def autocomplete(query:str, limit: int = 10) -> list:
         for row in results
     ]
 
+@app.get("/api/duckdb/categorical")
+async def get_categorical_data(cluster_id: int) -> dict:
+    with duckdb.connect(database=DB_NAME) as con:
+        query = ",".join([f"mode({x})" for x in categorical_vars])
+        res = con.execute(f"""
+        SELECT
+            ttc.cluster_id,
+            {query}
+        FROM track t
+        INNER JOIN track_to_cluster ttc ON ttc.track_id = t.track_id
+        WHERE ttc.cluster_id =?
+        GROUP BY ttc.cluster_id
+        """,[cluster_id]).fetchone()
+    if not res:
+        return {"cluster": cluster_id, "categories": {}} # so we can make a blank box
+    
+    return {
+            "cluster":cluster_id,
+            "categories": {
+                cat:res[i+1] for i, cat in enumerate(categorical_vars)
+            }
+        }
+    
+        
 
 @app.get("/api/data")
 async def get_data():
