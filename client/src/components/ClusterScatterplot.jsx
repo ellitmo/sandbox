@@ -35,7 +35,7 @@ const ClusterScatterplot = memo(
         }
       };
       fetchScatterplot();
-    }, []);
+    }, [clusterId1, clusterId2, xVariable, yVariable]);
 
     //d3 things
     const { width, height, margin, innerWidth, innerHeight } =
