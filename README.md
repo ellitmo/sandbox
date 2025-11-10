@@ -22,8 +22,13 @@ as the route that generates autocomplete suggestions)
 
 The frontend client is written as a React app, using most heavily chakra for 
 UI elements and d3 for calculations and plotting. Where I could, I created
-atomic components to avoid boilerplate and allow useage of react's memoization 
-for performance. The frontend code was formatted with prettier (`npx prettier`)
+atomic components to avoid repeated boilerplate and allow useage of react's memoization for performance. The frontend code was formatted with prettier (`npx prettier`)
+
+## Data Processing & Algorithm Selection
+
+The data pre-processing was lightweight, primarily consisting of data cleaning and encoding non-numeric variables (genre, key, mode) to create a numeric feature matrix. My exploratory analysis can be found in `spotify_kmeans.ipynb`.
+
+I opted for KMeans clustering for its simplicity and speed, but this choice has limitations. The audio features aren't independent—for example, 'pop' tracks tend to have higher popularity scores than 'a capella' tracks, and 'dance' tracks cluster around high energy and danceability. A decision-tree based approach (like Random Forest clustering or hierarchical methods) might better capture these feature interactions and non-linear relationships. Decision trees can also handle the mixed categorical/continuous nature of the data more naturally without manual encoding. To extend this application, I'd explore tree-based methods and dimensionality reduction (PCA/t-SNE) before clustering to see if they surface more meaningful musical groupings.
 
 ## Visualization
 The tool provides an interactive dashboard with three main views:
