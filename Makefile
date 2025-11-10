@@ -13,7 +13,7 @@ help:
 # Install dependencies
 install:
 	@echo "Installing Python dependencies..."
-	conda activate sandbox && pip install -r requirements.txt
+	pip install -r requirements.txt
 	@echo "Installing Node.js dependencies..."
 	cd client && npm install
 
