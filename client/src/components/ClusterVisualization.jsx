@@ -322,7 +322,6 @@ const ClusterVisualization = memo(
             marginBottom: "10px",
           }}
         >
-          <h2 style={{ margin: 0 }}>Spotify Music Clusters</h2>
           {isLoading && (
             <div
               style={{
@@ -339,6 +338,10 @@ const ClusterVisualization = memo(
         <p style={{ fontSize: "14px", color: "#666", marginBottom: "15px" }}>
           Showing clusters positioned by average <strong>{xVariable}</strong>{" "}
           (X) vs <strong>{yVariable}</strong> (Y)
+          <br/>
+          Click on a cluster to see histogram distributions of its features
+          <br/>
+          Shift + click on 2 clusters to compare currently selected features
           {isLoading && (
             <span style={{ color: "#999", marginLeft: "10px" }}>
               (Loading...)

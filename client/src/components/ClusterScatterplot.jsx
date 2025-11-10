@@ -2,20 +2,22 @@ import * as d3 from "d3";
 import { useMemo, memo, useEffect, useState } from "react";
 import axios from "axios";
 import { getChartDimensions, DUCKDB_API } from "./Constants";
+import { Spinner } from "@chakra-ui/react";
 
 const ClusterScatterplot = memo(
   ({ clusterId1, clusterId2, xVariable, yVariable }) => {
     const [scatterplotPoints, setScatterplotPoints] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const color1 = "magenta";
     const color2 = "limegreen";
 
     useEffect(() => {
+      setIsLoading(true);
       const fetchScatterplot = async () => {
         try {
           const response =
             await axios.get(`${DUCKDB_API}/compare?cluster_id1=${clusterId1}
                     &cluster_id2=${clusterId2}&var1=${xVariable}&var2=${yVariable}`);
-          console.log(response, response.data);
           const points = [];
           for (const [clusterId, data] of Object.entries(
             response.data.clusters,
@@ -32,6 +34,8 @@ const ClusterScatterplot = memo(
           setScatterplotPoints(points);
         } catch (err) {
           console.error("Error fetching scatterplot data:", err);
+        } finally {
+          setIsLoading(false);
         }
       };
       fetchScatterplot();
@@ -86,6 +90,7 @@ const ClusterScatterplot = memo(
         <h3>
           Cluster Comparison: {clusterId1} vs {clusterId2}
         </h3>
+        {isLoading && <Spinner/>}
         <svg width={width} height={height}>
           <g transform={`translate(${margin.left}, ${margin.top})`}>
             <rect
@@ -99,12 +104,12 @@ const ClusterScatterplot = memo(
                 key={i}
                 cx={point.x}
                 cy={point.y}
-                r={4}
+                r={2}
                 fill={point.color}
-                opacity={0.8}
+                opacity={0.7}
               />
             ))}
-            <g transform={`translate(0, ${innerHeight})`}>
+            <g transform={`translate(0, ${innerHeight+1})`}>
               <line x1={0} x2={innerWidth} stroke="#333" strokeWidth={1} />
               {xScale.ticks(5).map((tick) => (
                 <g key={tick} transform={`translate(${xScale(tick)}, 0)`}>
@@ -116,7 +121,7 @@ const ClusterScatterplot = memo(
               ))}
             </g>
             <g>
-              <line y1={0} y2={innerHeight} stroke="#333" strokeWidth={1} />
+              <line y1={0} y2={innerHeight+1} stroke="#333" strokeWidth={1} />
               {yScale.ticks(5).map((tick) => (
                 <g key={tick} transform={`translate(0, ${yScale(tick)})`}>
                   <line x1={-6} x2={0} stroke="#333" />
@@ -146,12 +151,12 @@ const ClusterScatterplot = memo(
           >
             {yVariable}
           </text>
-          <g transform={`translate(${width - 150}, 20)`}>
-            <circle cx={10} cy={10} r={5} fill={color1} opacity={0.8} />
+          <g transform={`translate(${width - 150}, 0)`}>
+            <circle cx={10} cy={10} r={3} fill={color1} opacity={0.8} />
             <text x={20} y={15} fontSize="12">
               Cluster {clusterId1}
             </text>
-            <circle cx={10} cy={30} r={5} fill={color2} opacity={0.8} />
+            <circle cx={10} cy={30} r={3} fill={color2} opacity={0.8} />
             <text x={20} y={35} fontSize="12">
               Cluster {clusterId2}
             </text>

@@ -52,8 +52,8 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
     if (!varValues || varValues.length === 0) {
       return {
         bins: [],
-        xScaleLinear: d3.scaleLinear().range([0, width]),
-        yScaleLinear: d3.scaleLinear().range([height, 0]),
+        xScaleLinear: d3.scaleLinear().range([0, innerWidth]),
+        yScaleLinear: d3.scaleLinear().range([innerHeight, 0]),
       };
     }
 
@@ -64,15 +64,15 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
     const xScaleLinear = d3
       .scaleLinear()
       .domain([bins[0].x0, bins[bins.length - 1].x1])
-      .range([0, width]);
+      .range([0, innerWidth]);
 
     const yScaleLinear = d3
       .scaleLinear()
       .domain([0, d3.max(bins, (d) => d.length)])
-      .range([height, 0]);
+      .range([innerHeight, 0]);
 
     return { bins, xScaleLinear, yScaleLinear };
-  }, [varValues, width, height]);
+  }, [varValues, innerHeight, innerWidth]);
   if (error) {
     return (
       <div className="cluster-visualization">
@@ -82,7 +82,7 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
     );
   }
   return (
-    <div style={{ position: "relative", minHeight: height }}>
+    <div style={{ position: "relative", minHeight: height, minWidth: width, padding:"10px" }}>
       {(isLoadingOptions || isLoadingStats) && (
         <div
           style={{
@@ -101,7 +101,7 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
           Loading histogram...
         </div>
       )}
-      <h3 style={{ marginBottom: "15px", fontSize: "18px", color: "#333" }}>
+      <h3 style={{ marginBottom: "15px", fontSize: "18px", color: "#333", textAlign:"left" }}>
         Select feature:
       </h3>
       <div
@@ -109,7 +109,6 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
           display: "flex",
           gap: "20px",
           alignItems: "center",
-          flexWrap: "wrap",
         }}
       >
         <div>
@@ -117,11 +116,11 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
             value={varName}
             onChange={(e) => setVarName(e.target.value)}
             style={{
-              padding: "8px 12px",
+              padding: "8px 2px",
               border: "1px solid #ccc",
               borderRadius: "4px",
               fontSize: "14px",
-              color: "black",
+              color: "#333",
               backgroundColor: "white",
               cursor: "pointer",
             }}
@@ -153,10 +152,23 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
               />
             ))}
           <g transform={`translate(0, ${innerHeight})`}>
-            <line x1={0} x2={innerWidth} stroke="black" />
+            <line x1={0} x2={innerWidth} stroke="#333" />
+            {xScaleLinear.ticks(8).map((tick) => (
+              <g key={tick} transform={`translate(${xScaleLinear(tick)}, 0)`}>
+                <line y1={0} y2={6} stroke="#333" />
+                <text
+                  y={20}
+                  textAnchor="middle"
+                  fontSize="12"
+                  fill="#333"
+                >
+                  {tick.toFixed(1)}
+                </text>
+                </g>
+            ))}
             <text
               textAnchor="middle"
-              color="black"
+              color="#333"
               fontSize="14"
               x={innerWidth / 2}
               y={35}
@@ -165,13 +177,27 @@ const ClusterHistogram = memo(({ clusterId, chartColor }) => {
             </text>
           </g>
           <g>
-            <line y1={0} y2={innerHeight} stroke="black" />
+            <line y1={0} y2={innerHeight} stroke="#333" />
+            {yScaleLinear.ticks(5).map((tick) => (
+              <g key={tick} transform={`translate(0, ${yScaleLinear(tick)})`}>
+                <line x1={-6} x2={0} stroke="#333" />
+                <text
+                  x={-10}
+                  dy="0.35em"
+                  textAnchor="end"
+                  fontSize="12"
+                  fill="#333"
+                >
+                  {tick}
+                </text>
+              </g>
+            ))}
             <text
               x={-innerHeight / 2}
-              y={-25}
+              y={-50}
               textAnchor="middle"
               transform={`rotate(-90)`}
-              fill="black"
+              fill="#333"
               fontSize="14"
             >
               Count

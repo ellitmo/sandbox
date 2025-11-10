@@ -2,12 +2,11 @@ import { Box, Text, VStack, HStack, Badge } from "@chakra-ui/react";
 
 const ClusterHover = ({ cluster, position, categoricalData }) => {
   if (!cluster || !position) return null;
-  console.log(position.x, position.y)
   return (
     <Box
       position="fixed"
-      left={position.x + 10}
-      top={position.y - 10}
+      left={position.x + 20}
+      top={position.y - 220} // move to above + right of bubble
       bg="white"
       border="1px solid #ddd"
       borderRadius="md"
@@ -17,7 +16,7 @@ const ClusterHover = ({ cluster, position, categoricalData }) => {
       zIndex={100}
       minWidth="200px"
     >
-      <VStack align="start" spacing={2}>
+      <VStack align="start" spacing={1}>
         <HStack>
           <Badge colorScheme="blue">Cluster {cluster.id}</Badge>
           <Text fontSize="xs" color="gray.600">

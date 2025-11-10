@@ -69,7 +69,7 @@ const ClusterPosition = ({ x, y, onXChange, onYChange }) => {
         backgroundColor: "#f8f9fa",
       }}
     >
-      <h3 style={{ marginBottom: "15px", fontSize: "18px", color: "#333" }}>
+      <h3 style={{ marginBottom: "5px", fontSize: "16px", color: "#333", textAlign:'left'}}>
         Plot Clusters By:
       </h3>
       <div

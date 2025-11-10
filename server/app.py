@@ -131,33 +131,45 @@ async def get_cluster_averages(x_var: str = 'popularity', y_var: str = 'danceabi
 
 
 @app.get("/api/duckdb/compare")
-async def compare(cluster_id1:int, cluster_id2, var1: str, var2: str) -> dict:
-    if var1 not in numeric_vars or var2 not in numeric_vars:
-        return {'error':'must select features that can produce scatterplot'}
-    
+async def compare_clusters(
+    cluster_id1: int, 
+    cluster_id2: int, 
+    var1: str, 
+    var2: str,
+    limit: int = 2500  # Add optional limit parameter with default
+) -> dict:
     with duckdb.connect(database=DB_NAME) as con:
+        # Get top tracks by popularity for each cluster
         query = f"""
-            SELECT
+        WITH ranked_tracks AS (
+            SELECT 
                 ttc.cluster_id,
-                LIST(t.{var1}) as x_values,
-                LIST(t.{var2}) as y_values
+                t.{var1} as x,
+                t.{var2} as y,
+                t.popularity,
+                ROW_NUMBER() OVER (PARTITION BY ttc.cluster_id ORDER BY t.popularity DESC) as rn
             FROM track t
             INNER JOIN track_to_cluster ttc ON ttc.track_id = t.track_id
-            WHERE ttc.cluster_id IN ({cluster_id1}, {cluster_id2})
-            GROUP BY ttc.cluster_id
-            ORDER BY ttc.cluster_id
+            WHERE ttc.cluster_id IN (?, ?)
+        )
+        SELECT cluster_id, x, y
+        FROM ranked_tracks
+        WHERE rn <= ?
+        ORDER BY cluster_id, popularity DESC
         """
-        res = con.execute(query).fetchall()
-
-    scatterplot_info = {}
-    for row in res:
-        cluster_id, x_values, y_values = row
-        scatterplot_info[str(cluster_id)] = {
-            'x': x_values,
-            'y': y_values,
-        }
-
-    return {'clusters': scatterplot_info}
+        
+        res = con.execute(query, [cluster_id1, cluster_id2, limit]).fetchall()
+        
+        # Group by cluster
+        clusters = {}
+        for row in res:
+            cluster_id = row[0]
+            if cluster_id not in clusters:
+                clusters[cluster_id] = {"x": [], "y": []}
+            clusters[cluster_id]["x"].append(row[1])
+            clusters[cluster_id]["y"].append(row[2])
+        
+        return {"clusters": clusters}
 
 @app.get("/api/duckdb/suggest")
 async def get_suggested_tracks(track_name) -> dict:

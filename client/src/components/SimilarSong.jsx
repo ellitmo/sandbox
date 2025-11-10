@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Flex, Input, Button } from "@chakra-ui/react";
 import axios from "axios";
 import { DUCKDB_API } from "./Constants";
+import { getChartDimensions } from "./Constants";
 
 const SimilarSong = () => {
   const [trackName, setTrackName] = useState("");
@@ -9,6 +10,7 @@ const SimilarSong = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [autocomplete, setAutocomplete] = useState([]);
+  const { width, height } = getChartDimensions();
 
   useEffect(() => {
     const fetchAutocomplete = async () => {
@@ -35,6 +37,7 @@ const SimilarSong = () => {
     try {
       setIsLoading(true);
       setError(null);
+      setAutocomplete([]);
       const response = await axios.get(
         `${DUCKDB_API}/suggest?track_name=${encodeURIComponent(trackName)}`,
       );
@@ -53,12 +56,12 @@ const SimilarSong = () => {
     }
   };
   return (
-    <Flex direction="column" gap={4} p={4}>
+    <Flex direction="column" gap={4} p={4} width={width} height={height}>
       <Box>
-        <h2 style={{ marginBottom: "15px", fontSize: "24px" }}>
+        <h2 style={{ marginBottom: 5, fontSize: "24px" }}>
           Song Recommendations
         </h2>
-        <p style={{ color: "#666", marginBottom: "20px" }}>
+        <p style={{ color: "#666", marginBottom: 5 }}>
           Enter a song name to find similar tracks
         </p>
       </Box>
@@ -98,7 +101,7 @@ const SimilarSong = () => {
                       setAutocomplete([]);
                     }}
                   >
-                    <Box fontWeight="medium">{item.track_name}</Box>
+                    <Box fontWeight="medium" color="gray.600">{item.track_name}</Box>
                     <Box fontSize="sm" color="gray.600">
                       {item.artist_name}
                     </Box>
@@ -135,11 +138,6 @@ const SimilarSong = () => {
                 </span>
               </Box>
             ))}
-          </Box>
-          <Box>
-            <h3 style={{ fontSize: "18px", marginBottom: "10px" }}>
-              Visualization
-            </h3>
           </Box>
         </Box>
       )}

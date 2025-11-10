@@ -6,6 +6,7 @@ import ClusterPosition from "./components/ClusterPosition";
 import ClusterScatterplot from "./components/ClusterScatterplot";
 import CloseButton from "./components/CloseButton";
 import SimilarSong from "./components/SimilarSong";
+import { GREEN } from "./components/Constants";
 import { Tabs, Flex, Box } from "@chakra-ui/react";
 
 function App() {
@@ -51,14 +52,11 @@ function App() {
 
   return (
     <>
-      <h1>Sandbox</h1>
-      <div className="card">
-        <p>d3 library testing</p>
-      </div>
-      <Tabs.Root defaultValue="data">
+      <h1 style={{ padding:2, fontSize: 32, color:GREEN}}>Spotify Track Explorer</h1>
+      <Tabs.Root defaultValue="clusters" padding={'5px'}>
         <Tabs.List>
-          <Tabs.Trigger value="clusters">Music Clusters</Tabs.Trigger>
-          <Tabs.Trigger value="recommendations">Recommendations</Tabs.Trigger>
+          <Tabs.Trigger value="clusters" color={GREEN}>Music Clusters</Tabs.Trigger>
+          <Tabs.Trigger value="recommendations" color={GREEN}>Recommendations</Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="clusters">
           <Flex
@@ -162,10 +160,6 @@ function App() {
           </Flex>
         </Tabs.Content>
       </Tabs.Root>
-
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }
