@@ -52,16 +52,13 @@ backend routes
 3. **smarter filtering for similar songs!** I'm returning the 10 most similar songs from the approximate nearest neighbors algorithm, but other results users might want would be give me a similar song I haven't heard (less popular!) or similar songs all with the same tempo. Determining drill downs and common query patterns by speaking 
 with users 
 
-4. *hovers!** Within the scatterplots generated in browser, it would be great to have more detail. I could see this done by a configurable zoom to reduce the crowding in 
+4. **hovers!** Within the scatterplots generated in browser, it would be great to have more detail. I could see this done by a configurable zoom to reduce the crowding in 
 the frame, and then a mouseover/hover to show metadata about a particular track
 
 ## AI Disclosure
-I worked with Claude/Anthropic chat for this project. I used it 
-for React code generation, i.e., "give me a component that uses d3 to create a scatterplot", and then filled in the particulars with app routes + styling
-I also used Claude for bug fixing - one such bug was a flickering/re-rendering
-of my scatterplot component, which I ended up solving 
-with some suggestions from Claude by wrapping the plot in a chakra Flex component so it wouldn't rerender the entire popover. 
-I used claude code in agent mode to generate a version of Annoy 
-with sklearn that worked in my environment. 
+I worked with Claude/Anthropic chat for this project. 
+- **React code generation**: Used for initial component scaffolding (e.g., "give me a component that uses d3 to create a scatterplot"), then customized with app-specific routes and styling
+- **Bug fixing**: Claude helped debug a flickering/re-rendering issue in my scatterplot component, which I resolved by wrapping the plot in a Chakra Flex component
+- **Annoy workaround**: Used Claude Code in agent mode to generate a sklearn-based alternative when annoy produced buggy results in my environment
 
-The kmeans clustering, data processing, and server code is homegrown. 
+The KMeans clustering, data processing, and server code is homegrown. 
