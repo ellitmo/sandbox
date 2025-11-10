@@ -1,32 +1,34 @@
-import { Box, Text, VStack, HStack, Badge } from '@chakra-ui/react';
+import { Box, Text, VStack, HStack, Badge } from "@chakra-ui/react";
 
-const ClusterTooltip = ({ cluster, position, categoricalData }) => {
+const ClusterHover = ({ cluster, position, categoricalData }) => {
   if (!cluster || !position) return null;
-
+  console.log(position.x, position.y)
   return (
     <Box
-      position="absolute"
+      position="fixed"
       left={position.x + 10}
-      top={position.y + 10}
+      top={position.y - 10}
       bg="white"
       border="1px solid #ddd"
       borderRadius="md"
-      padding="12px"
+      padding="10px"
       boxShadow="lg"
       pointerEvents="none"
-      zIndex={1000}
+      zIndex={100}
       minWidth="200px"
     >
       <VStack align="start" spacing={2}>
         <HStack>
           <Badge colorScheme="blue">Cluster {cluster.id}</Badge>
           <Text fontSize="xs" color="gray.600">
-            {cluster.count} tracks
+            {cluster.size} tracks
           </Text>
         </HStack>
-        
+
         <Box>
-          <Text fontSize="sm" fontWeight="bold">Position:</Text>
+          <Text fontSize="sm" fontWeight="bold">
+            Position:
+          </Text>
           <Text fontSize="xs" color="gray.700">
             X: {cluster.originalX?.toFixed(2)}
           </Text>
@@ -37,7 +39,9 @@ const ClusterTooltip = ({ cluster, position, categoricalData }) => {
 
         {categoricalData && (
           <Box>
-            <Text fontSize="sm" fontWeight="bold" mb={1}>Most Common:</Text>
+            <Text fontSize="sm" fontWeight="bold" mb={1}>
+              Most Common:
+            </Text>
             {Object.entries(categoricalData.categories).map(([key, value]) => (
               <Text key={key} fontSize="xs" color="gray.700">
                 {key}: <strong>{value}</strong>
@@ -50,4 +54,4 @@ const ClusterTooltip = ({ cluster, position, categoricalData }) => {
   );
 };
 
-export default ClusterTooltip;
+export default ClusterHover;

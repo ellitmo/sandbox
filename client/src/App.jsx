@@ -158,7 +158,7 @@ function App() {
         </Tabs.Content>
         <Tabs.Content value="recommendations">
           <Flex>
-          <SimilarSong xVariable={x} yVariable={y}/>
+            <SimilarSong xVariable={x} yVariable={y} />
           </Flex>
         </Tabs.Content>
       </Tabs.Root>

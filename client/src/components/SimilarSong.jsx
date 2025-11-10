@@ -3,9 +3,7 @@ import { Box, Flex, Input, Button } from "@chakra-ui/react";
 import axios from "axios";
 import { DUCKDB_API } from "./Constants";
 
-
 const SimilarSong = () => {
-
   const [trackName, setTrackName] = useState("");
   const [suggestions, setSuggestions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +69,7 @@ const SimilarSong = () => {
               placeholder="Enter song name..."
               value={trackName}
               onChange={(e) => setTrackName(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && fetchSuggest()}
+              onKeyPress={(e) => e.key === "Enter" && fetchSuggest()}
               list="track-suggestions"
             />
             {autocomplete.length > 0 && (

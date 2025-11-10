@@ -3,6 +3,7 @@ import { getChartDimensions, DUCKDB_API } from "./Constants";
 import axios from "axios";
 import * as d3 from "d3";
 import D3Circles from "./D3Circles";
+import ClusterHover from "./ClusterHover";
 
 const ClusterVisualization = memo(
   ({
@@ -15,6 +16,8 @@ const ClusterVisualization = memo(
     const [staticClusters, setStaticClusters] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [categoricalData, setCategoricalData] = useState(null);
+    const [currentHover, setCurrentHover] = useState(null);
 
     useEffect(() => {
       const fetchStaticClusters = async () => {
@@ -78,6 +81,18 @@ const ClusterVisualization = memo(
       fetchClusterAverages();
     }, [xVariable, yVariable, staticClusters]);
 
+    useEffect(() => {
+      const fetchClusterCategories = async () => {
+        try {
+          const response = await axios.get(`${DUCKDB_API}/categorical`);
+          setCategoricalData(response.data);
+        } catch (err) {
+          console.error("Error fetching categorical summaires:", err);
+        }
+      };
+      fetchClusterCategories();
+    }, []);
+    // callbacks
     const handleClusterClick = useCallback(
       (event, cluster) => {
         if (onClusterClick) {
@@ -86,9 +101,26 @@ const ClusterVisualization = memo(
       },
       [onClusterClick],
     );
+
     //d3 things
     const { width, height, margin, innerWidth, innerHeight } =
       getChartDimensions();
+
+    const handleHover = useCallback((event, cluster) => {
+      const svg = event.currentTarget.closest('svg');
+      const svgRect = svg.getBoundingClientRect();
+      setCurrentHover({
+        cluster,
+        position: { 
+          x: svgRect.left + cluster.x + margin.left,
+          y: svgRect.top + cluster.y + margin.top
+        },
+      });
+    }, [margin.left, margin.top]);
+
+    const handleHoverLeave = useCallback(() => {
+      setCurrentHover(null);
+    }, []);
 
     const colorScale = useMemo(() => d3.scaleOrdinal(d3.schemeDark2), []);
 
@@ -127,7 +159,7 @@ const ClusterVisualization = memo(
       const radii = d3.extent(clusters, (d) => d.size);
       const rScale = d3.scaleSqrt().domain(radii).range([10, 30]);
 
-      return clusters.map((cluster, i) => ({
+      return clusters.map((cluster) => ({
         id: cluster.id,
         x: xScale(cluster.x),
         y: yScale(cluster.y),
@@ -139,6 +171,14 @@ const ClusterVisualization = memo(
         count: cluster.count,
       }));
     }, [clusters, xScale, yScale, colorScale]);
+
+    // subselect categorical data for tooltip
+    const selectedCategoricalData = useMemo(() => {
+      if (!currentHover?.cluster || !categoricalData) {
+        return null;
+      }
+      return categoricalData[currentHover.cluster.id];
+    }, [currentHover, categoricalData]);
 
     if (isLoading) {
       return (
@@ -267,8 +307,13 @@ const ClusterVisualization = memo(
     return (
       <div
         className="cluster-visualization"
-        style={{ width: width, minHeight: height + 100 }}
+        style={{ width: width, minHeight: height + 100, position: 'relative'}}
       >
+        <ClusterHover
+          cluster={currentHover?.cluster}
+          position={currentHover?.position}
+          categoricalData={selectedCategoricalData}
+        />
         <div
           style={{
             display: "flex",
@@ -353,6 +398,8 @@ const ClusterVisualization = memo(
             <D3Circles
               clusters={clusterRender}
               onClusterClick={handleClusterClick}
+              onHover={handleHover}
+              onHoverLeave={handleHoverLeave}
               selectedClusters={selectedClusters}
             />
           </g>
