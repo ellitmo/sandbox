@@ -136,10 +136,9 @@ async def compare_clusters(
     cluster_id2: int, 
     var1: str, 
     var2: str,
-    limit: int = 2500  # Add optional limit parameter with default
+    limit: int = 2500
 ) -> dict:
     with duckdb.connect(database=DB_NAME) as con:
-        # Get top tracks by popularity for each cluster
         query = f"""
         WITH ranked_tracks AS (
             SELECT 
@@ -159,8 +158,6 @@ async def compare_clusters(
         """
         
         res = con.execute(query, [cluster_id1, cluster_id2, limit]).fetchall()
-        
-        # Group by cluster
         clusters = {}
         for row in res:
             cluster_id = row[0]
@@ -231,10 +228,6 @@ async def get_suggested_tracks(track_name) -> dict:
         "query": track_name,
         "similar_tracks": similar_tracks
     }
-
-@app.get("/api/duckdb/track/")
-async def get_track_info(track_name: str):
-    pass 
 
 @app.get("/api/duckdb/autocomplete")
 async def autocomplete(query:str, limit: int = 10) -> list:
