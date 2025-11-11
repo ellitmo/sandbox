@@ -17,7 +17,8 @@ the clustering analysis we perform on these features to see if we can distinguis
 distinct musical genres.
 To approach this, I first needed to group similar songs. Once songs were clustered, the front end application
 allows users to create custom views of the similar song groups, plotted against their
-average feature value. One immediate correlation from this exercise is there
+average feature value to explore possible feature correlations.
+One immediate correlation from this exercise is there
 seems to be a positive correlation between 'danceability' and 'popularity' - very popular songs
 rank highly in both, and are typically in the hip-hop or country genres.
 On the low end, expectedly, is Opera - niche, and not danceable. This correlation could
