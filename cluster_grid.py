@@ -28,19 +28,6 @@ def create_circular_layout(n_clusters, radius_base=5.0):
 def generate_cluster_positions_df(cluster_labels, n_clusters):
     """
     Generate a DataFrame with cluster ID, x, y positions for DuckDB storage.
-
-    Parameters:
-    -----------
-    cluster_labels : array-like
-        Array of cluster assignments for each data point
-    n_clusters : int
-        Number of clusters
-    layout_type : str
-        'circular', 'grid', or 'force_directed'
-
-    Returns:
-    --------
-    pd.DataFrame with columns: cluster_id, x_position, y_position, cluster_size
     """
 
     positions = create_circular_layout(n_clusters)
